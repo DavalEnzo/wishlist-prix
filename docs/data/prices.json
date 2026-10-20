@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "generatedAt": null,
+  "source": "AllKeyShop (API non publique, client intégré au projet)",
+  "settings": {
+    "excludeRegions": [],
+    "edition": "standard",
+    "keyshopAlerts": true
+  },
+  "games": []
+}

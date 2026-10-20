@@ -1,0 +1,29 @@
+{
+  "settings": {
+    "currency": "eur",
+    "excludeRegions": ["US", "USA", "NA", "North America", "LATAM", "Latin America", "RU", "Russia", "CIS", "Asia", "SEA", "India", "Turkey", "TR", "Argentina", "Brazil", "China", "CN", "Japan", "JP", "ROW", "Rest of World", "MENA"],
+    "edition": "standard",
+    "keyshopAlerts": true
+  },
+  "games": [
+    {
+      "title": "GTA VI",
+      "platforms": ["ps5"],
+      "targetPrice": 60,
+      "priority": 3,
+      "notes": "Pas de version PC à la sortie : seule la PS5 est suivie."
+    },
+    {
+      "title": "Hollow Knight: Silksong",
+      "platforms": ["pc", "ps5"],
+      "targetPrice": 10,
+      "priority": 3
+    },
+    {
+      "title": "Persona 3 Reload",
+      "platforms": ["pc", "ps5"],
+      "targetPrice": 10,
+      "priority": 2
+    }
+  ]
+}
