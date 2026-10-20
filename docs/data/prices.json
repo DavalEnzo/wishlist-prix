@@ -1,8 +1,9 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-20T15:10:47.477Z",
+  "generatedAt": "2026-10-20T15:25:36.354Z",
   "source": "AllKeyShop (API non publique, client intégré au projet)",
   "settings": {
+    "country": "FR",
     "excludeRegions": [
       "US",
       "USA",
@@ -41,7 +42,7 @@
       "targetPrice": 60,
       "priority": 3,
       "notes": "Pas de version PC à la sortie : seule la PS5 est suivie.",
-      "checkedAt": "2026-10-20T15:10:47.477Z",
+      "checkedAt": "2026-10-20T15:25:36.354Z",
       "error": null,
       "results": [
         {
@@ -108,7 +109,7 @@
               "lastSeen": "2026-10-20 11:53:42"
             }
           ],
-          "excludedByRegion": 0,
+          "excludedByRegion": 6,
           "editionFallback": false,
           "historicalLow": {
             "official": {
@@ -149,7 +150,7 @@
       "targetPrice": 10,
       "priority": 3,
       "notes": "",
-      "checkedAt": "2026-10-20T15:10:47.477Z",
+      "checkedAt": "2026-10-20T15:25:36.354Z",
       "error": null,
       "results": [
         {
@@ -324,9 +325,42 @@
               "edition": "Standard Edition",
               "region": "XBOX/PC EU",
               "lastSeen": "2026-10-20 14:42:19"
+            },
+            {
+              "platform": "pc",
+              "store": "Steam",
+              "kind": "officiel",
+              "price": 15.6,
+              "listPrice": null,
+              "coupon": null,
+              "edition": "Standard Edition",
+              "region": "Steam",
+              "lastSeen": "2026-10-20 01:08:20"
+            },
+            {
+              "platform": "pc",
+              "store": "Humble Store",
+              "kind": "officiel",
+              "price": 19.5,
+              "listPrice": null,
+              "coupon": null,
+              "edition": "Standard Edition",
+              "region": "Steam",
+              "lastSeen": "2026-10-20 00:26:52"
+            },
+            {
+              "platform": "pc",
+              "store": "Gog.com",
+              "kind": "officiel",
+              "price": 19.5,
+              "listPrice": null,
+              "coupon": null,
+              "edition": "Standard Edition",
+              "region": "Steam",
+              "lastSeen": "2026-10-20 03:24:15"
             }
           ],
-          "excludedByRegion": 2,
+          "excludedByRegion": 5,
           "editionFallback": false,
           "historicalLow": {
             "official": {
@@ -352,17 +386,6 @@
           "offers": [
             {
               "platform": "ps5",
-              "store": "Vidaplayer",
-              "kind": "revendeur",
-              "price": 19.74,
-              "listPrice": null,
-              "coupon": null,
-              "edition": "Standard Edition",
-              "region": "Playstation Wallet DE",
-              "lastSeen": "2026-10-19 16:39:22"
-            },
-            {
-              "platform": "ps5",
               "store": "PS Store FR",
               "kind": "officiel",
               "price": 19.99,
@@ -374,39 +397,6 @@
             },
             {
               "platform": "ps5",
-              "store": "PS Store IT",
-              "kind": "officiel",
-              "price": 19.99,
-              "listPrice": null,
-              "coupon": null,
-              "edition": "Standard Edition",
-              "region": "PS5",
-              "lastSeen": "2026-10-20 13:48:04"
-            },
-            {
-              "platform": "ps5",
-              "store": "PS Store ES",
-              "kind": "officiel",
-              "price": 19.99,
-              "listPrice": null,
-              "coupon": null,
-              "edition": "Standard Edition",
-              "region": "PS5",
-              "lastSeen": "2026-10-20 13:48:04"
-            },
-            {
-              "platform": "ps5",
-              "store": "PS Store DE",
-              "kind": "officiel",
-              "price": 19.99,
-              "listPrice": null,
-              "coupon": null,
-              "edition": "Standard Edition",
-              "region": "PS5",
-              "lastSeen": "2026-10-20 13:48:16"
-            },
-            {
-              "platform": "ps5",
               "store": "Vidaplayer",
               "kind": "revendeur",
               "price": 20.22,
@@ -415,31 +405,9 @@
               "edition": "Standard Edition",
               "region": "Playstation Wallet FR",
               "lastSeen": "2026-10-14 19:15:54"
-            },
-            {
-              "platform": "ps5",
-              "store": "Vidaplayer",
-              "kind": "revendeur",
-              "price": 20.22,
-              "listPrice": null,
-              "coupon": null,
-              "edition": "Standard Edition",
-              "region": "Playstation Wallet IT",
-              "lastSeen": "2026-10-13 15:38:08"
-            },
-            {
-              "platform": "ps5",
-              "store": "Vidaplayer",
-              "kind": "revendeur",
-              "price": 20.53,
-              "listPrice": null,
-              "coupon": null,
-              "edition": "Standard Edition",
-              "region": "Playstation Wallet SP",
-              "lastSeen": "2026-10-19 11:42:30"
             }
           ],
-          "excludedByRegion": 1,
+          "excludedByRegion": 7,
           "editionFallback": false,
           "historicalLow": {
             "official": {
@@ -468,15 +436,15 @@
         "lastSeen": "2026-10-20 11:38:25"
       },
       "bestOfficial": {
-        "platform": "ps5",
-        "store": "PS Store FR",
+        "platform": "pc",
+        "store": "Steam",
         "kind": "officiel",
-        "price": 19.99,
+        "price": 15.6,
         "listPrice": null,
         "coupon": null,
         "edition": "Standard Edition",
-        "region": "PS5",
-        "lastSeen": "2026-10-20 13:41:53"
+        "region": "Steam",
+        "lastSeen": "2026-10-20 01:08:20"
       },
       "alert": null
     },
@@ -490,7 +458,7 @@
       "targetPrice": 10,
       "priority": 2,
       "notes": "",
-      "checkedAt": "2026-10-20T15:10:47.477Z",
+      "checkedAt": "2026-10-20T15:25:36.354Z",
       "error": null,
       "results": [
         {
@@ -665,9 +633,42 @@
               "edition": "Standard Edition",
               "region": "Steam",
               "lastSeen": "2026-10-20 13:44:35"
+            },
+            {
+              "platform": "pc",
+              "store": "Steam",
+              "kind": "officiel",
+              "price": 17.99,
+              "listPrice": null,
+              "coupon": null,
+              "edition": "Standard Edition",
+              "region": "Steam",
+              "lastSeen": "2026-10-20 05:07:10"
+            },
+            {
+              "platform": "pc",
+              "store": "Gamesplanet FR",
+              "kind": "officiel",
+              "price": 19.99,
+              "listPrice": null,
+              "coupon": null,
+              "edition": "Standard Edition",
+              "region": "Steam EU",
+              "lastSeen": "2026-10-20 04:55:35"
+            },
+            {
+              "platform": "pc",
+              "store": "Xbox FR",
+              "kind": "officiel",
+              "price": 59.99,
+              "listPrice": null,
+              "coupon": null,
+              "edition": "Standard Edition",
+              "region": "Xbox/PC GLOBAL",
+              "lastSeen": "2026-10-20 09:50:21"
             }
           ],
-          "excludedByRegion": 8,
+          "excludedByRegion": 23,
           "editionFallback": false,
           "historicalLow": {
             "official": {
@@ -693,17 +694,6 @@
           "offers": [
             {
               "platform": "ps5",
-              "store": "PS Store DE",
-              "kind": "officiel",
-              "price": 20.99,
-              "listPrice": null,
-              "coupon": null,
-              "edition": "Standard Edition",
-              "region": "PS5",
-              "lastSeen": "2026-10-20 14:40:44"
-            },
-            {
-              "platform": "ps5",
               "store": "PS Store FR",
               "kind": "officiel",
               "price": 20.99,
@@ -712,31 +702,9 @@
               "edition": "Standard Edition",
               "region": "PS5",
               "lastSeen": "2026-10-20 14:21:49"
-            },
-            {
-              "platform": "ps5",
-              "store": "PS Store ES",
-              "kind": "officiel",
-              "price": 20.99,
-              "listPrice": null,
-              "coupon": null,
-              "edition": "Standard Edition",
-              "region": "PS5",
-              "lastSeen": "2026-10-20 14:40:53"
-            },
-            {
-              "platform": "ps5",
-              "store": "PS Store IT",
-              "kind": "officiel",
-              "price": 20.99,
-              "listPrice": null,
-              "coupon": null,
-              "edition": "Standard Edition",
-              "region": "PS5",
-              "lastSeen": "2026-10-20 14:40:40"
             }
           ],
-          "excludedByRegion": 1,
+          "excludedByRegion": 10,
           "editionFallback": false,
           "historicalLow": {
             "official": {
@@ -765,15 +733,15 @@
         "lastSeen": "2026-10-14 07:40:48"
       },
       "bestOfficial": {
-        "platform": "ps5",
-        "store": "PS Store DE",
+        "platform": "pc",
+        "store": "Steam",
         "kind": "officiel",
-        "price": 20.99,
+        "price": 17.99,
         "listPrice": null,
         "coupon": null,
         "edition": "Standard Edition",
-        "region": "PS5",
-        "lastSeen": "2026-10-20 14:40:44"
+        "region": "Steam",
+        "lastSeen": "2026-10-20 05:07:10"
       },
       "alert": null
     }
