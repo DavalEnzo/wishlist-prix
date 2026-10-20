@@ -1,99 +1,106 @@
-# Wishlist prix
+# Wishlist gaming
 
-Chaque matin, GitHub relève le prix le plus bas de chaque jeu de ta wishlist. Le relevé couvre le PC (boutiques officielles et revendeurs de clés comme G2A, Eneba ou Kinguin) et la PS5. Une page web affiche les prix, et Discord t'alerte quand un jeu passe sous ton prix cible.
+Site multi-utilisateur à héberger chez soi. Chacun a son compte (email ou Discord) et sa wishlist de jeux. Chaque matin, le site relève le prix le plus bas de chaque jeu sur PC (boutiques officielles et revendeurs de clés : G2A, Eneba, Kinguin…) et sur PS5. Quand un jeu passe sous le prix cible de quelqu'un, il reçoit une notification sur le site, et un message privé Discord s'il a relié son compte.
 
-- `wishlist.json` : tes jeux et tes réglages, le seul fichier à modifier.
-- `docs/` : la page publiée sur GitHub Pages et les prix relevés (`docs/data/prices.json`).
-- `src/` : le script de relevé (TypeScript, exécuté directement par Node).
-- `.github/workflows/prices.yml` : le relevé quotidien, la sauvegarde des prix et la publication de la page.
+- **Next.js 16 + PostgreSQL**, livrés en Docker Compose. Ça tourne sur un PC ou sur un Raspberry Pi 4/5.
+- **Les prix viennent d'AllKeyShop** (GoClecD en France), lus par un client écrit dans ce projet (`src/lib/prices/allkeyshop.ts`).
+- **Un jeu suivi par plusieurs personnes n'est relevé qu'une fois.** Les règles de chacun (pays, régions exclues, revendeurs ou non) s'appliquent ensuite à l'affichage et aux alertes.
 
-Les prix viennent d'AllKeyShop (GoClecD en France). Le client qui les lit est écrit dans ce projet (`src/allkeyshop.ts`) : le relevé n'utilise aucune librairie, seulement Node.js.
+## Ce qu'il te faut
 
-## Mise en place
+- Une machine allumée en permanence : un PC sous Linux ou Windows (avec Docker Desktop), ou un Raspberry Pi 4/5 avec 4 Go de RAM et un système 64 bits.
+- Docker et Docker Compose. Sur Linux ou Raspberry Pi : `curl -fsSL https://get.docker.com | sh`.
+- Pour l'ouvrir sur Internet : un nom de domaine (voir « Rendre le site accessible depuis Internet »).
 
-1. **Crée un dépôt GitHub**, par exemple `wishlist-prix`. GitHub Pages est gratuit pour un dépôt public. Pour un dépôt privé, il faut un compte payant.
-2. **Envoie les fichiers** depuis ce dossier :
-   ```bash
-   git init -b main
-   git add .
-   git commit -m "Wishlist prix"
-   git remote add origin https://github.com/<ton-pseudo>/wishlist-prix.git
-   git push -u origin main
-   ```
-3. **Active la page** : *Settings → Pages → Build and deployment → Source : GitHub Actions*.
-4. **Branche Discord** :
-   - Dans Discord, ouvre *Modifier le salon → Intégrations → Webhooks → Nouveau webhook*, puis *Copier l'URL du webhook*.
-   - Sur GitHub, ouvre *Settings → Secrets and variables → Actions → New repository secret*. Nom : `DISCORD_WEBHOOK_URL`, valeur : l'URL copiée.
-5. **Lance un premier relevé** : *Actions → Prix wishlist → Run workflow*. Une minute plus tard, la page est en ligne sur `https://<ton-pseudo>.github.io/wishlist-prix/`.
-
-Ensuite, le relevé tourne tout seul tous les jours à 8h41 (7h41 en hiver). Il se relance aussi dès que tu modifies `wishlist.json`.
-
-## Ajouter un jeu
-
-Modifie `wishlist.json` directement sur GitHub (le lien « Modifier la wishlist » de la page y mène) :
-
-```json
-{ "title": "Hades II", "platforms": ["pc"], "targetPrice": 20, "priority": 3 }
-```
-
-| Champ | Rôle |
-|---|---|
-| `title` | Nom affiché (obligatoire). |
-| `platforms` | `["pc"]`, `["ps5"]` ou les deux (défaut). Le ROG Ally utilise les offres PC. |
-| `targetPrice` | Prix cible en euros. Une alerte part quand un prix passe dessous. |
-| `priority` | Niveau d'envie : 1, 2 ou 3. |
-| `search` | Nom à chercher dans le catalogue, si le titre ne suffit pas (voir plus bas). |
-| `edition` | Édition voulue (ex. `"deluxe"`). Par défaut, l'édition standard. |
-| `notes` | Remarque affichée dans le détail du jeu. |
-
-### Si un jeu est mal reconnu
-
-Le script cherche le jeu dans le catalogue AllKeyShop (environ 200 000 noms) mot par mot. Il ignore la ponctuation et les accents, et traite les chiffres romains comme des chiffres : « Hades II » trouve « Hades 2 », « GTA VI » trouve « GTA 6 ». Il n'accepte jamais un compte, un DLC ou une autre plateforme. Si plusieurs jeux différents correspondent, il refuse de choisir. Par exemple, « The Witcher 3 » trouve à la fois *Wild Hunt*, *REDkit* et *Hearts of Stone*.
-
-Le jeu est alors marqué **« Nom à vérifier »** et n'est jamais utilisé pour un prix ou une alerte. La page liste les noms trouvés : copie le bon dans `search`.
-
-```json
-{ "title": "The Witcher 3", "search": "The Witcher 3 Wild Hunt", "platforms": ["pc"], "targetPrice": 8 }
-```
-
-Si le nom diffère selon la plateforme : `"search": { "pc": "…", "ps5": "…" }`.
-
-## Réglages (`settings`)
-
-- `country` : le pays de tes comptes (`"FR"`). Les offres liées à un autre pays sont écartées : PS Store allemand ou italien, carte PlayStation Wallet espagnole… Les codes « EU » ou « GLOBAL » restent acceptés.
-- `excludeRegions` : mots qui écartent une offre quand ils apparaissent dans sa région ou dans le nom de la boutique. Par exemple, `"US"` écarte « PS Store US » et les clés « US Steam ». Les régions incompatibles avec un compte français sont exclues par défaut. Ajoute `"Xbox"` pour écarter les clés « Xbox/PC » (Microsoft Store).
-- `edition` : `"standard"` (défaut), `"all"`, ou un mot de l'édition.
-- `keyshopAlerts` : `false` pour ne recevoir des alertes que sur les boutiques officielles.
-
-Une alerte part la première fois qu'un jeu passe sous son prix cible. Elle repart seulement si le prix baisse encore d'au moins 0,50 €, ou après une remontée au-dessus de la cible.
-
-## Lancer en local
-
-Il faut Node.js 22.18 ou plus récent. Le relevé ne demande aucune installation.
+## Installation
 
 ```bash
-npm run dry-run           # relève les prix sans envoyer d'alerte
-npm start                 # relève et envoie les alertes (DISCORD_WEBHOOK_URL dans un fichier .env)
-npm run preview           # affiche la page sur http://localhost:4173
-npm ci --ignore-scripts   # seulement pour développer : installe TypeScript
-npm run check             # vérification des types + tests (hors réseau)
+git clone https://github.com/DavalEnzo/wishlist-prix.git
+cd wishlist-prix
+cp .env.example .env
+nano .env            # au minimum POSTGRES_PASSWORD et APP_URL
+docker compose up -d --build
 ```
 
-Si AllKeyShop bloque un jour les serveurs de GitHub (relevé en échec dans l'onglet Actions), lance `npm start` depuis ton PC avec le Planificateur de tâches Windows. Le script est le même.
+Le premier lancement construit l'image : quelques minutes sur un PC, 10 à 15 minutes sur un Raspberry Pi. Le site est ensuite sur `http://<adresse-de-la-machine>:3000`.
+
+Au premier démarrage, le service de relevé télécharge le catalogue AllKeyShop (environ 200 000 jeux, une minute). La recherche de jeux marche dès qu'il a fini.
+
+Pour suivre ce qui se passe : `docker compose logs -f worker`.
+
+## Réglages (`.env`)
+
+| Variable | Rôle |
+|---|---|
+| `POSTGRES_PASSWORD` | Mot de passe interne de la base. Obligatoire. |
+| `APP_URL` | Adresse publique du site, sans `/` final. Sert aux liens, aux cookies et à Discord. |
+| `SIGNUP_CODE` | Si rempli, il faut ce code pour créer un compte. Conseillé dès que le site est sur Internet. |
+| `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` | Connexion avec Discord (voir plus bas). |
+| `DISCORD_BOT_TOKEN`, `DISCORD_INVITE_URL` | Alertes en message privé Discord (voir plus bas). |
+| `SMTP_URL`, `MAIL_FROM` | Emails de « mot de passe oublié ». Sans eux, utilise la commande de réinitialisation. |
+| `DAILY_AT`, `TIMEZONE` | Heure du relevé quotidien (défaut 08:41, Europe/Paris). |
+| `TRUST_PROXY` | `true` derrière un tunnel Cloudflare ou un reverse proxy. |
+| `WEB_PORT` | Port du site sur la machine (défaut 3000). |
+
+Après une modification : `docker compose up -d`.
+
+## Discord : connexion et messages privés
+
+1. Sur [discord.com/developers/applications](https://discord.com/developers/applications), crée une application (par exemple « Wishlist gaming »).
+2. **Connexion** : dans *OAuth2*, copie le *Client ID* et le *Client Secret* dans `.env`. Dans *Redirects*, ajoute `APP_URL/api/auth/discord/callback`, par exemple `https://wishlist.mondomaine.fr/api/auth/discord/callback`.
+3. **Messages privés** : dans *Bot*, clique sur *Reset Token* et copie le jeton dans `DISCORD_BOT_TOKEN`. Aucun « privileged intent » n'est nécessaire.
+4. **Invite le bot sur ton serveur** : dans *OAuth2 → URL Generator*, coche le scope `bot` sans aucune permission, ouvre l'URL générée et choisis ton serveur.
+5. Mets une invitation permanente vers ce serveur dans `DISCORD_INVITE_URL`.
+
+Discord n'autorise un bot à écrire en privé qu'aux membres d'un serveur où il se trouve, et seulement s'ils acceptent les messages privés des membres de ce serveur (c'est le réglage par défaut). Si un message ne passe pas, la personne voit la raison dans ses réglages, et l'alerte reste dans ses notifications sur le site.
+
+## Rendre le site accessible depuis Internet
+
+Le plus simple, sans ouvrir de port sur ta box, est un **tunnel Cloudflare** (gratuit, il faut un nom de domaine géré par Cloudflare) :
+
+1. Dans le tableau de bord Cloudflare, ouvre *Zero Trust → Networks → Tunnels* et crée un tunnel.
+2. Installe le connecteur sur la machine du site, avec la commande donnée par Cloudflare.
+3. Ajoute un *Public hostname* (par exemple `wishlist.mondomaine.fr`) qui pointe vers `http://localhost:3000`.
+4. Dans `.env`, mets `APP_URL=https://wishlist.mondomaine.fr`, `TRUST_PROXY=true` et un `SIGNUP_CODE`. Si le connecteur tourne sur la même machine, mets `127.0.0.1:3000:3000` dans `ports` du service `web` de `docker-compose.yml`.
+5. Relance avec `docker compose up -d`.
+
+## Administration
+
+```bash
+# Lien de réinitialisation de mot de passe (valable une heure), sans email
+docker compose exec web npm run reset-password -- ami@exemple.fr
+
+# Sauvegarde et restauration de la base
+docker compose exec db pg_dump -U wishlist wishlist > sauvegarde.sql
+docker compose exec -T db psql -U wishlist wishlist < sauvegarde.sql
+
+# Mise à jour
+git pull && docker compose up -d --build
+```
 
 ## Sécurité
 
-- **Aucune dépendance à l'exécution.** Le relevé n'utilise que Node.js et le code de ce dépôt. GitHub Actions n'installe aucun paquet npm.
-- Les seuls paquets du projet sont TypeScript et `@types/node`, qui servent uniquement à vérifier le code sur ton PC. Leurs versions sont figées, et `.npmrc` interdit les scripts d'installation.
-- Le client AllKeyShop ne contacte que `www.allkeyshop.com`. Il refuse les réponses trop volumineuses et abandonne une requête après 30 secondes. Il valide chaque champ reçu et écarte ce qui est inattendu au lieu de le deviner.
-- Les Actions GitHub sont épinglées par empreinte de commit, avec des permissions limitées au strict nécessaire.
-- Le webhook Discord est un secret GitHub. Le script refuse toute URL qui n'est pas un webhook Discord, et les messages ne peuvent mentionner personne (`allowed_mentions`).
-- La page n'insère jamais de HTML venant des données et n'ouvre que des liens `https://`.
+- **Mots de passe** : hachés avec scrypt (intégré à Node.js). La base ne stocke qu'une empreinte des jetons de session et des liens de réinitialisation.
+- **Cookies** : `HttpOnly`, `SameSite=Lax`, et `Secure` dès que `APP_URL` est en HTTPS. Changer de mot de passe déconnecte les autres appareils.
+- **Abus** : limitation des tentatives de connexion, d'inscription et de réinitialisation. Les messages ne révèlent pas si un email a un compte.
+- **Connexion Discord** : protégée par un paramètre `state` aléatoire. Un compte Discord n'est jamais relié automatiquement à un compte email : c'est fait depuis les réglages, une fois connecté.
+- **En-têtes** : en production, Content-Security-Policy, X-Frame-Options et Referrer-Policy. Les polices sont hébergées par le site lui-même, sans appel à Google.
+- **Dépendances** : peu nombreuses et figées (Next.js, React, Drizzle ORM, postgres.js, nodemailer), installées sans scripts (`ignore-scripts`). Discord et AllKeyShop sont appelés directement avec `fetch`, sans librairie.
+
+## Développement
+
+```bash
+npm ci --ignore-scripts
+npm run check        # types + tests (PostgreSQL en mémoire via PGlite, aucun réseau)
+DATABASE_URL=postgres://… npm run migrate
+DATABASE_URL=postgres://… npm run dev
+DATABASE_URL=postgres://… npm run worker
+```
+
+Le service de relevé et les scripts tournent directement en TypeScript avec Node 24, sans compilation. Une modification du schéma (`src/lib/db/schema.ts`) se traduit en migration SQL avec `npm run db:generate`.
 
 ## Limites
 
-- L'API d'AllKeyShop n'est pas publique : elle peut changer ou bloquer l'accès sans prévenir. Si son format change, le relevé échoue avec un message clair plutôt que d'afficher de faux prix. Il faudra alors adapter `src/allkeyshop.ts`.
-- Les prix sont ceux vus par AllKeyShop dans les 7 derniers jours, code promo compris. Vérifie toujours l'offre avant d'acheter.
-- Pour la PS5, tout dépend des boutiques qu'AllKeyShop suit. Le PS Store France n'y figure pas toujours.
-- Les liens « Voir sur GoClecD » sont construits à partir du nom du jeu et peuvent parfois mener à une page introuvable.
-- GitHub peut suspendre les tâches planifiées d'un dépôt resté 60 jours sans activité. Si ça arrive, réactive-la depuis l'onglet Actions.
+- L'API d'AllKeyShop n'est pas publique : elle peut changer ou bloquer l'accès sans prévenir. Si son format change, le relevé affiche une erreur au lieu de faux prix, et il faudra adapter `src/lib/prices/allkeyshop.ts`.
+- Les prix sont ceux vus par AllKeyShop dans les 7 derniers jours, code promo compris. Les clés de revendeurs peuvent être limitées à une région ou à une plateforme d'activation (« Xbox/PC », « Steam ») : vérifie toujours l'offre avant d'acheter.
+- Pour la PS5, tout dépend des boutiques suivies par AllKeyShop.

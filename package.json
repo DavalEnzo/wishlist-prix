@@ -1,22 +1,39 @@
 {
   "name": "wishlist-prix",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "Suivi du prix le plus bas des jeux de ma wishlist (PC, PS5, revendeurs de clés) avec alertes Discord. Aucune dépendance à l'exécution.",
+  "description": "Site multi-utilisateur de wishlist de jeux : prix le plus bas sur PC, PS5 et chez les revendeurs de clés, alertes sur le site et en message privé Discord.",
   "type": "module",
   "engines": {
-    "node": ">=22.18"
+    "node": ">=24"
   },
   "scripts": {
-    "start": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning src/cli.ts",
-    "dry-run": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning src/cli.ts --dry-run",
-    "preview": "node --disable-warning=ExperimentalWarning scripts/serve.ts",
-    "test": "node --disable-warning=ExperimentalWarning --test test/core.test.ts test/integration.test.ts",
-    "typecheck": "tsc -p tsconfig.json",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "worker": "node src/worker/index.ts",
+    "migrate": "node src/scripts/migrate.ts",
+    "reset-password": "node src/scripts/reset-password.ts",
+    "db:generate": "drizzle-kit generate",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --test-concurrency=1 \"test/**/*.test.ts\"",
     "check": "npm run typecheck && npm test"
   },
+  "dependencies": {
+    "drizzle-orm": "0.45.3",
+    "next": "16.3.8",
+    "nodemailer": "10.0.15",
+    "postgres": "3.4.9",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
     "@types/node": "24.19.2",
-    "typescript": "7.0.2"
+    "@types/nodemailer": "8.0.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "drizzle-kit": "0.31.11",
+    "typescript": "5.9.3"
   }
 }
