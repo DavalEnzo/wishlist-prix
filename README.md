@@ -24,6 +24,14 @@ docker compose up -d --build
 
 Le premier lancement construit l'image : quelques minutes sur un PC, 10 à 15 minutes sur un Raspberry Pi. Le site est ensuite sur `http://<adresse-de-la-machine>:3000`.
 
+### Raspberry Pi : image construite par GitHub
+
+Construire l'image sur un Pi peu équipé est long et peut manquer de mémoire. À chaque push sur `main`, GitHub Actions construit l'image arm64 et la publie sur `ghcr.io/davalenzo/wishlist-prix`. Sur le Pi, pas de `--build` :
+
+```bash
+git pull && docker compose pull && docker compose up -d
+```
+
 Au premier démarrage, le service de relevé télécharge le catalogue AllKeyShop (environ 200 000 jeux, une minute). La recherche de jeux marche dès qu'il a fini.
 
 Pour suivre ce qui se passe : `docker compose logs -f worker`.

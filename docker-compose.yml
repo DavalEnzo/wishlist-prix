@@ -2,8 +2,9 @@
 # Services: db (PostgreSQL), migrate (one-off), web (the site), worker (prices and alerts).
 
 x-app: &app
-  image: wishlist-prix:local
-  pull_policy: never
+  # Raspberry Pi: the arm64 image built by GitHub Actions (docker compose pull).
+  # PC or other machine: docker compose up -d --build builds it locally instead.
+  image: ${IMAGE:-ghcr.io/davalenzo/wishlist-prix:latest}
   env_file: .env
   environment:
     DATABASE_URL: postgres://wishlist:${POSTGRES_PASSWORD:?définis POSTGRES_PASSWORD dans .env}@db:5432/wishlist
