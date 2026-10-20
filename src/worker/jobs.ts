@@ -183,7 +183,7 @@ export async function processAlerts(ctx: WorkerContext, onlyUserIds?: string[]):
 
 /* ---------- Runs ---------- */
 
-/** Every minute: games just added get their first prices (and alerts) quickly. */
+/** Every few seconds: games just added get their first prices (and alerts) quickly. */
 export async function pendingRun(ctx: WorkerContext): Promise<number> {
   const ids = await pendingProductIds(ctx.db);
   if (ids.length === 0) return 0;

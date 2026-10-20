@@ -92,15 +92,15 @@ export function WishlistView({ items, prefs, lastRun, catalogReady, discordLinke
     }
   }, [scope, sort, keys]);
 
-  // While some prices are still being fetched, refresh every 10 s (for 5 minutes at most).
+  // While some prices are still being fetched, refresh every 3 s (for 5 minutes at most).
   const pending = items.some((i) => i.platforms.some((p) => p.pending));
   useEffect(() => {
     if (!pending) return;
     let n = 0;
     const t = setInterval(() => {
-      if (++n > 30) clearInterval(t);
+      if (++n > 100) clearInterval(t);
       router.refresh();
-    }, 10_000);
+    }, 3_000);
     return () => clearInterval(t);
   }, [pending, router]);
 
@@ -399,7 +399,7 @@ function PlatformBlock({ p, keep }: { p: PlatformOffers; keep: (o: Offer) => boo
         <a href={p.url} target="_blank" rel="noopener noreferrer">Voir sur GoClecD</a>
       </p>
       {p.error && <p className="note err">Dernier relevé impossible : {p.error}</p>}
-      {p.pending && <p className="note">Prix en cours de relevé, ils s’afficheront dans une minute.</p>}
+      {p.pending && <p className="note">Prix en cours de relevé, ils s’afficheront dans quelques secondes.</p>}
       {p.editionFallback && <p className="note">Pas d’édition standard trouvée : toutes les éditions sont affichées.</p>}
       {!p.pending && offers.length === 0 && (
         <p className="note">{p.offers.length ? 'Seuls des revendeurs de clés ont ce jeu. Coche « Inclure les revendeurs de clés » pour les voir.' : 'Aucune offre récente.'}</p>

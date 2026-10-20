@@ -1,6 +1,6 @@
 /**
  * Background service, started next to the site (docker compose "worker").
- * - every minute: prices of games just added;
+ * - every 5 seconds: prices of games just added;
  * - once a day at DAILY_AT (Paris time by default): catalog, every followed
  *   game, alerts.
  */
@@ -10,7 +10,7 @@ import { catalogIsEmpty, dailyRun, getMeta, pendingRun, syncCatalog, type Worker
 
 const TIME_ZONE = process.env.TIMEZONE?.trim() || 'Europe/Paris';
 const DAILY_AT = /^\d{2}:\d{2}$/.test(process.env.DAILY_AT ?? '') ? (process.env.DAILY_AT as string) : '08:41';
-const TICK_MS = 60_000;
+const TICK_MS = 5_000;
 
 const ctx: WorkerContext = {
   db: getDb(),

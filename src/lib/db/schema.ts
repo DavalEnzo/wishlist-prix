@@ -65,7 +65,7 @@ export const prices = pgTable('prices', {
   error: text('error'),
   /** Set when someone adds the game: the worker checks it within a minute. */
   requestedAt: timestamp('requested_at', { withTimezone: true }).notNull().defaultNow(),
-  /** Last attempt, successful or not: a failing product is not retried every minute. */
+  /** Last attempt, successful or not: a failing product is not retried on every tick. */
   attemptedAt: timestamp('attempted_at', { withTimezone: true }),
 });
 

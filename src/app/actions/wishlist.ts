@@ -38,7 +38,7 @@ export async function saveItemAction(_prev: FormState, form: FormData): Promise<
     throw e;
   }
   revalidatePath('/wishlist');
-  return { ok: id ? 'Modifications enregistrées.' : 'Jeu ajouté. Ses prix arrivent dans une minute.' };
+  return { ok: id ? 'Modifications enregistrées.' : 'Jeu ajouté. Ses prix arrivent dans quelques secondes.' };
 }
 
 export async function deleteItemAction(id: string): Promise<void> {
