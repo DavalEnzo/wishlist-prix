@@ -7,6 +7,8 @@ export const PLATFORM_LABEL: Record<Platform, string> = { pc: 'PC', ps5: 'PS5' }
 
 export interface Settings {
   currency: string;
+  /** Country of your accounts (PSN, Steam): offers locked to another country are skipped. */
+  country: string;
   /** Region or store words to skip (e.g. "US" drops "PS Store US"). */
   excludeRegions: string[];
   /** "standard", "all", or a keyword found in the edition name. */
@@ -132,6 +134,6 @@ export interface PricesFile {
   version: 1;
   generatedAt: string | null;
   source: string;
-  settings: Pick<Settings, 'excludeRegions' | 'edition' | 'keyshopAlerts'>;
+  settings: Pick<Settings, 'country' | 'excludeRegions' | 'edition' | 'keyshopAlerts'>;
   games: GameResult[];
 }

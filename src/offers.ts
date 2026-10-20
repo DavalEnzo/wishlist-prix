@@ -36,6 +36,27 @@ export function isExcluded(region: string, store: string, exclude: string[]): bo
   });
 }
 
+const COUNTRY_CODES = new Set([
+  'fr', 'de', 'it', 'es', 'sp', 'uk', 'gb', 'pl', 'nl', 'be', 'at', 'pt', 'ch', 'se', 'dk', 'fi',
+  'cz', 'hu', 'ro', 'gr', 'ie', 'sk', 'hr', 'bg', 'us', 'ca', 'au', 'br', 'mx', 'jp', 'kr', 'hk',
+]);
+const MULTI_COUNTRY = new Set(['eu', 'europe', 'european', 'global', 'worldwide', 'ww', 'emea']);
+
+/**
+ * True when an offer only works with an account from another country: a
+ * region like "Playstation Wallet DE", or an official storefront like
+ * "PS Store IT". Multi-country regions ("EU", "GLOBAL") are never locked.
+ */
+export function isOtherCountry(region: string, store: string, official: boolean, country: string): boolean {
+  const home = country.toLowerCase();
+  const locked = (w: string[]) => {
+    if (w.some((t) => MULTI_COUNTRY.has(t))) return false;
+    const codes = w.filter((t) => COUNTRY_CODES.has(t));
+    return codes.length > 0 && !codes.includes(home);
+  };
+  return locked(words(region)) || (official && locked(words(store)));
+}
+
 export function filterEdition(offers: Offer[], preference: string): { offers: Offer[]; fallback: boolean } {
   const pref = fold(preference.trim());
   if (pref === '' || pref === 'all' || pref === 'toutes') return { offers, fallback: false };
@@ -45,24 +66,28 @@ export function filterEdition(offers: Offer[], preference: string): { offers: Of
 
 const MAX_OFFERS = 15;
 
+/** Cheapest official offers kept even when key resellers fill the list. */
+const MIN_OFFICIAL = 3;
+
 export function buildOffers(
   platform: Platform,
   data: PriceData,
-  exclude: string[],
+  settings: { excludeRegions: string[]; country: string },
   edition: string,
 ): { offers: Offer[]; excludedByRegion: number; editionFallback: boolean } {
   let excludedByRegion = 0;
   const all: Offer[] = [];
   for (const l of data.listings) {
     if (!(l.price > 0)) continue;
-    if (isExcluded(l.region, l.merchant, exclude)) {
+    const kind = classify(l);
+    if (isExcluded(l.region, l.merchant, settings.excludeRegions) || isOtherCountry(l.region, l.merchant, kind === 'officiel', settings.country)) {
       excludedByRegion++;
       continue;
     }
     all.push({
       platform,
       store: l.merchant,
-      kind: classify(l),
+      kind,
       price: l.price,
       listPrice: l.listPrice,
       coupon: l.coupon,
@@ -78,10 +103,11 @@ export function buildOffers(
     const known = cheapest.get(key);
     if (!known || o.price < known.price) cheapest.set(key, o);
   }
-  const offers = [...cheapest.values()]
-    .sort((a, b) => a.price - b.price || (a.kind === 'officiel' ? -1 : 1))
-    .slice(0, MAX_OFFERS);
-  return { offers, excludedByRegion, editionFallback: fallback };
+  const byPrice = (a: Offer, b: Offer) => a.price - b.price || (a.kind === 'officiel' ? -1 : 1);
+  const sorted = [...cheapest.values()].sort(byPrice);
+  const top = sorted.slice(0, MAX_OFFERS);
+  const officials = sorted.slice(MAX_OFFERS).filter((o) => o.kind === 'officiel').slice(0, MIN_OFFICIAL);
+  return { offers: [...top, ...officials].sort(byPrice), excludedByRegion, editionFallback: fallback };
 }
 
 /** Cheapest offer across platforms whose catalog match is trustworthy. */

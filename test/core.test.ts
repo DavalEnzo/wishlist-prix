@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 import { decideAlerts, discordPayloads, isDiscordWebhook, sendDiscord } from '../src/alerts.ts';
 import { parseCatalog, parsePrices } from '../src/allkeyshop.ts';
 import { findInCatalog, indexCatalog } from '../src/catalog.ts';
-import { buildOffers, classify, filterEdition, isExcluded, pickBest } from '../src/offers.ts';
+import { buildOffers, classify, filterEdition, isExcluded, isOtherCountry, pickBest } from '../src/offers.ts';
 import { comparatorUrl, tokens, words } from '../src/text.ts';
 import { DEFAULT_SETTINGS, parseWishlist, WishlistError } from '../src/wishlist.ts';
 import type { GameResult, Listing, Offer, PlatformResult } from '../src/types.ts';
@@ -160,6 +160,21 @@ describe('offers', () => {
     assert.equal(isExcluded('EU Steam', 'Eneba', ex), false);
     assert.equal(isExcluded('GLOBAL', 'Instant Gaming', ex), false);
   });
+  it('skips offers tied to another country’s account', () => {
+    assert.equal(isOtherCountry('PS5', 'PS Store DE', true, 'FR'), true);
+    assert.equal(isOtherCountry('PS5', 'PS Store FR', true, 'FR'), false);
+    assert.equal(isOtherCountry('Playstation Wallet SP', 'Vidaplayer', false, 'FR'), true);
+    assert.equal(isOtherCountry('Playstation Wallet FR', 'Vidaplayer', false, 'FR'), false);
+    assert.equal(isOtherCountry('Playstation Game Code EU in ENGLISH', 'CJS CDKeys', false, 'FR'), false);
+    assert.equal(isOtherCountry('XBOX/PC EU', 'GAMESEAL', false, 'FR'), false);
+    assert.equal(isOtherCountry('Steam', 'Mmoga.de', false, 'FR'), false, 'a reseller’s domain is not a region');
+  });
+  it('keeps the cheapest official offers even when resellers fill the list', () => {
+    const resellers = Array.from({ length: 20 }, (_, i) => listing({ merchant: `Shop${i}`, official: false, price: 5 + i }));
+    const built = buildOffers('pc', { listings: [...resellers, listing({ merchant: 'Steam', price: 59.99 })], historicalLow: { official: null, keyshops: null } }, DEFAULT_SETTINGS, 'standard');
+    assert.equal(built.offers.length, 16);
+    assert.equal(built.offers.at(-1)?.store, 'Steam');
+  });
   it('keeps the wanted edition and falls back to all editions', () => {
     const list = [offer({ edition: 'Deluxe Edition', price: 30 }), offer({ edition: 'Standard Edition', price: 25 })];
     assert.deepEqual(filterEdition(list, 'standard').offers.map((o) => o.price), [25]);
@@ -176,7 +191,7 @@ describe('offers', () => {
         listing({ merchant: 'Broken', price: 0 }),
       ],
       historicalLow: { official: null, keyshops: null },
-    }, DEFAULT_SETTINGS.excludeRegions, 'standard');
+    }, DEFAULT_SETTINGS, 'standard');
     assert.equal(built.excludedByRegion, 1);
     assert.deepEqual(built.offers.map((o) => [o.store, o.price, o.kind, o.coupon]), [
       ['G2A', 10.5, 'revendeur', 'AKS'],

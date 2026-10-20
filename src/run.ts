@@ -14,12 +14,18 @@ export interface RunOptions {
   delayMs?: number;
   now?: () => Date;
   source?: PriceSource;
+  /** HTTP client for Discord (tests). */
+  fetchImpl?: typeof fetch;
   log?: (line: string) => void;
 }
 
 export interface RunResult {
   file: PricesFile;
   alerts: Alert[];
+  /** True when Discord accepted the alerts. */
+  delivered: boolean;
+  /** Why Discord refused the alerts, if it did. */
+  alertError: string | null;
   /** True when nothing could be priced because requests failed. */
   failed: boolean;
 }
@@ -62,12 +68,43 @@ export async function run(opts: RunOptions): Promise<RunResult> {
       .filter((g) => g.error !== null && (g.checkedAt !== runIso || g.results.every((r) => r.error !== null)))
       .map((g) => g.id),
   );
-  const { games, alerts } = decideAlerts(checked, wishlist.settings, runAt, notChecked);
+  const decided = decideAlerts(checked, wishlist.settings, runAt, notChecked);
+  let games = decided.games;
+  const { alerts } = decided;
+
+  // An alert counts as sent only once Discord accepted it; otherwise it is
+  // raised again on the next run.
+  let delivered = false;
+  let alertError: string | null = null;
+  if (alerts.length > 0) {
+    const lines = alerts.map((a) => `  ${a.title} : ${eur(a.offer.price)} (cible ${eur(a.targetPrice)})`).join('\n');
+    if (opts.dryRun) log(`${alerts.length} alerte(s), non envoyée(s) (essai) :\n${lines}`);
+    else if (!opts.webhookUrl) log(`${alerts.length} alerte(s), non envoyée(s) : DISCORD_WEBHOOK_URL n’est pas défini :\n${lines}`);
+    else {
+      try {
+        await sendDiscord(opts.webhookUrl, alerts, opts.fetchImpl);
+        delivered = true;
+        log(`${alerts.length} alerte(s) envoyée(s) sur Discord.`);
+      } catch (e) {
+        alertError = e instanceof Error ? e.message : String(e);
+        log(`Alerte(s) non envoyée(s) : ${alertError}`);
+      }
+    }
+    if (!delivered) {
+      const before = new Map(checked.map((g) => [g.id, g.alert]));
+      const alerted = new Set(alerts.map((a) => a.gameId));
+      games = games.map((g) => (alerted.has(g.id) ? { ...g, alert: before.get(g.id) ?? null } : g));
+    }
+  } else {
+    log('Aucune nouvelle alerte.');
+  }
+
   const file: PricesFile = {
     version: 1,
     generatedAt: runIso,
     source: 'AllKeyShop (API non publique, client intégré au projet)',
     settings: {
+      country: wishlist.settings.country,
       excludeRegions: wishlist.settings.excludeRegions,
       edition: wishlist.settings.edition,
       keyshopAlerts: wishlist.settings.keyshopAlerts,
@@ -78,19 +115,7 @@ export async function run(opts: RunOptions): Promise<RunResult> {
   await writeFile(pricesPath, `${JSON.stringify(file, null, 2)}\n`);
   log(`Prix enregistrés dans ${PRICES_PATH}.`);
 
-  if (alerts.length > 0) {
-    const lines = alerts.map((a) => `  ${a.title} : ${eur(a.offer.price)} (cible ${eur(a.targetPrice)})`).join('\n');
-    if (opts.dryRun) log(`${alerts.length} alerte(s), non envoyée(s) (essai) :\n${lines}`);
-    else if (!opts.webhookUrl) log(`${alerts.length} alerte(s), mais DISCORD_WEBHOOK_URL n’est pas défini :\n${lines}`);
-    else {
-      await sendDiscord(opts.webhookUrl, alerts);
-      log(`${alerts.length} alerte(s) envoyée(s) sur Discord.`);
-    }
-  } else {
-    log('Aucune nouvelle alerte.');
-  }
-
   const priced = checked.some((g) => !notChecked.has(g.id) && g.results.some((r) => !r.error && usableMatch(r.match)));
   const errored = checked.some((g) => g.error !== null);
-  return { file, alerts, failed: !priced && errored };
+  return { file, alerts, delivered, alertError, failed: !priced && errored };
 }

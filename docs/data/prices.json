@@ -478,10 +478,7 @@
         "region": "PS5",
         "lastSeen": "2026-10-20 13:41:53"
       },
-      "alert": {
-        "price": 7.4,
-        "at": "2026-10-20T15:10:47.477Z"
-      }
+      "alert": null
     },
     {
       "id": "persona-3-reload",

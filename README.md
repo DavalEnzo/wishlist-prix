@@ -60,7 +60,8 @@ Si le nom diffère selon la plateforme : `"search": { "pc": "…", "ps5": "…" 
 
 ## Réglages (`settings`)
 
-- `excludeRegions` : mots qui écartent une offre quand ils apparaissent dans sa région ou dans le nom de la boutique. Par exemple, `"US"` écarte « PS Store US » et les clés « US Steam ». Les régions incompatibles avec un compte français sont exclues par défaut.
+- `country` : le pays de tes comptes (`"FR"`). Les offres liées à un autre pays sont écartées : PS Store allemand ou italien, carte PlayStation Wallet espagnole… Les codes « EU » ou « GLOBAL » restent acceptés.
+- `excludeRegions` : mots qui écartent une offre quand ils apparaissent dans sa région ou dans le nom de la boutique. Par exemple, `"US"` écarte « PS Store US » et les clés « US Steam ». Les régions incompatibles avec un compte français sont exclues par défaut. Ajoute `"Xbox"` pour écarter les clés « Xbox/PC » (Microsoft Store).
 - `edition` : `"standard"` (défaut), `"all"`, ou un mot de l'édition.
 - `keyshopAlerts` : `false` pour ne recevoir des alertes que sur les boutiques officielles.
 

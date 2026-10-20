@@ -29,17 +29,21 @@ function priceHistory(productId: string, seen: string) {
   });
   const histories: Record<string, unknown[]> = {
     '101': [row(1, '1', 19.5), row(2, '2', 7.53, 'AKSGAME'), row(5, '2', 8.1)],
-    '102': [row(3, '3', 14.99), row(4, '3', 19.99)],
+    '102': [row(3, '3', 14.99), row(4, '4', 19.99), row(6, '4', 19.99), row(7, '5', 19.74), row(7, '6', 20.22)],
     '203': [row(4, '3', 79.99)],
   };
   return {
-    officialMerchants: '1,3,4',
+    officialMerchants: '1,3,4,6',
     history: histories[productId] ?? [],
     editions: { '1': { id: '1', name: 'Standard Edition' } },
-    regions: { '1': { id: '1', name: 'GLOBAL' }, '2': { id: '2', name: 'EU Steam' }, '3': { id: '3', name: 'PSN' } },
+    regions: {
+      '1': { id: '1', name: 'GLOBAL' }, '2': { id: '2', name: 'EU Steam' }, '3': { id: '3', name: 'PSN' }, '4': { id: '4', name: 'PS5' },
+      '5': { id: '5', name: 'Playstation Wallet DE' }, '6': { id: '6', name: 'Playstation Wallet FR' },
+    },
     merchants: {
       '1': { id: '1', name: 'Steam' }, '2': { id: '2', name: 'Gameseal' }, '3': { id: '3', name: 'PS Store US' },
-      '4': { id: '4', name: 'PS Store FR' }, '5': { id: '5', name: 'Eneba' },
+      '4': { id: '4', name: 'PS Store FR' }, '5': { id: '5', name: 'Eneba' }, '6': { id: '6', name: 'PS Store DE' },
+      '7': { id: '7', name: 'Vidaplayer' },
     },
     lower_official_price: { merchant_id: 1, price: '14.99', last_update: seen },
     lower_keyshops_price: { merchant_id: 2, price: '6.20', last_update: seen },
@@ -49,12 +53,18 @@ function priceHistory(productId: string, seen: string) {
 describe('end-to-end relevé with the built-in AllKeyShop client', () => {
   let root = '';
   let cacheDir = '';
-  const calls = { catalog: 0, prices: [] as string[] };
+  const WEBHOOK = 'https://discord.com/api/webhooks/1/tok';
+  const calls = { catalog: 0, prices: [] as string[], discord: 0 };
   let blocked = false;
+  let discordDown = false;
   const seen = utc(new Date(Date.now() - 3600_000));
 
   const fakeFetch = (async (input: string | URL | Request) => {
     const url = String(input);
+    if (url === WEBHOOK) {
+      calls.discord++;
+      return new Response(null, { status: discordDown ? 500 : 204 });
+    }
     if (blocked) return new Response('blocked', { status: 403 });
     if (url === CATALOG_URL) {
       calls.catalog++;
@@ -86,9 +96,17 @@ describe('end-to-end relevé with the built-in AllKeyShop client', () => {
     }));
   });
 
-  it('prices trusted matches, skips doubtful ones and raises one alert', async () => {
+  const wishlist = (games: object[]) => JSON.stringify({ games });
+  const newRoot = async (games: object[]) => {
+    const dir = await mkdtemp(join(tmpdir(), 'wishlist-prix-root-'));
+    await writeFile(join(dir, 'wishlist.json'), wishlist(games));
+    return dir;
+  };
+  const written = async (dir: string) => JSON.parse(await readFile(join(dir, 'docs', 'data', 'prices.json'), 'utf8')) as PricesFile;
+
+  it('prices trusted matches and skips doubtful ones and other countries', async () => {
     const lines: string[] = [];
-    const { file, alerts, failed } = await run({ root, dryRun: true, delayMs: 0, source: source(), log: (l) => lines.push(l) });
+    const { file, alerts, delivered, failed } = await run({ root, dryRun: true, delayMs: 0, source: source(), log: (l) => lines.push(l) });
     assert.equal(failed, false);
 
     const silksong = file.games.find((g) => g.id === 'hollow-knight-silksong');
@@ -100,8 +118,8 @@ describe('end-to-end relevé with the built-in AllKeyShop client', () => {
     ]);
     assert.equal(pc?.historicalLow?.official?.price, 14.99);
     assert.equal(ps5?.matchedName, 'Hollow Knight Silksong PS5');
-    assert.equal(ps5?.excludedByRegion, 1, 'PS Store US is skipped');
-    assert.deepEqual(ps5?.offers.map((o) => o.store), ['PS Store FR']);
+    assert.deepEqual(ps5?.offers.map((o) => [o.store, o.region]), [['PS Store FR', 'PS5'], ['Vidaplayer', 'Playstation Wallet FR']]);
+    assert.equal(ps5?.excludedByRegion, 3, 'PS Store US, PS Store DE and the German wallet are skipped');
     assert.equal(silksong?.best?.store, 'Gameseal');
     assert.equal(silksong?.bestOfficial?.store, 'Steam');
 
@@ -115,15 +133,35 @@ describe('end-to-end relevé with the built-in AllKeyShop client', () => {
     assert.ok(!calls.prices.includes('201'), 'a doubtful match is never priced');
 
     assert.deepEqual(alerts.map((a) => [a.gameId, a.offer.price]), [['hollow-knight-silksong', 7.53]]);
+    assert.equal(delivered, false);
     assert.ok(lines.some((l) => l.includes('non envoyée')));
-    const written = JSON.parse(await readFile(join(root, 'docs', 'data', 'prices.json'), 'utf8')) as PricesFile;
-    assert.equal(written.games.find((g) => g.id === 'hollow-knight-silksong')?.alert?.price, 7.53);
+    assert.equal((await written(root)).games.find((g) => g.id === 'hollow-knight-silksong')?.alert, null, 'an unsent alert is raised again next time');
   });
 
-  it('reuses the cached catalog and does not alert twice for the same price', async () => {
-    const { alerts } = await run({ root, dryRun: true, delayMs: 0, source: source(), log: () => {} });
-    assert.equal(alerts.length, 0);
+  it('sends the alert to Discord, then records it', async () => {
+    const { alerts, delivered } = await run({ root, dryRun: false, webhookUrl: WEBHOOK, fetchImpl: fakeFetch, delayMs: 0, source: source(), log: () => {} });
+    assert.equal(alerts.length, 1);
+    assert.equal(delivered, true);
+    assert.equal(calls.discord, 1);
+    assert.equal((await written(root)).games.find((g) => g.id === 'hollow-knight-silksong')?.alert?.price, 7.53);
     assert.equal(calls.catalog, 1, 'catalog downloaded once, then read from the cache');
+  });
+
+  it('does not alert twice for the same price', async () => {
+    const { alerts } = await run({ root, dryRun: false, webhookUrl: WEBHOOK, fetchImpl: fakeFetch, delayMs: 0, source: source(), log: () => {} });
+    assert.equal(alerts.length, 0);
+    assert.equal(calls.discord, 1);
+  });
+
+  it('retries next time when Discord refuses the alert', async () => {
+    const dir = await newRoot([{ title: 'Hollow Knight: Silksong', platforms: ['pc'], targetPrice: 10 }]);
+    discordDown = true;
+    const r = await run({ root: dir, dryRun: false, webhookUrl: WEBHOOK, fetchImpl: fakeFetch, delayMs: 0, source: source(), log: () => {} });
+    discordDown = false;
+    assert.equal(r.delivered, false);
+    assert.match(r.alertError ?? '', /HTTP 500/);
+    assert.equal((await written(dir)).games[0]?.alert, null);
+    assert.equal(r.file.games[0]?.best?.price, 7.53, 'prices are saved anyway');
   });
 
   it('keeps the last prices when every request fails', async () => {

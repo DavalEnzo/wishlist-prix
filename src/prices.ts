@@ -38,7 +38,7 @@ export async function checkPlatform(
   if (!usableMatch(found.match)) return result;
 
   const data = await source.prices(found.id);
-  const built = buildOffers(platform, data, settings.excludeRegions, game.edition ?? settings.edition);
+  const built = buildOffers(platform, data, settings, game.edition ?? settings.edition);
   result.offers = built.offers;
   result.excludedByRegion = built.excludedByRegion;
   result.editionFallback = built.editionFallback;

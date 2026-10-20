@@ -4,6 +4,7 @@ import { PLATFORMS, type Platform, type Settings, type WishGame, type Wishlist }
 
 export const DEFAULT_SETTINGS: Settings = {
   currency: 'eur',
+  country: 'FR',
   excludeRegions: [
     'US', 'USA', 'NA', 'North America', 'LATAM', 'Latin America', 'RU', 'Russia', 'CIS',
     'Asia', 'SEA', 'India', 'Turkey', 'TR', 'Argentina', 'Brazil', 'China', 'CN', 'Japan',
@@ -35,6 +36,10 @@ export function parseWishlist(raw: unknown): Wishlist {
   if (s.currency !== undefined) {
     if (typeof s.currency === 'string' && /^[a-z]{3}$/i.test(s.currency)) settings.currency = s.currency.toLowerCase();
     else problems.push('settings.currency doit être un code de devise (ex. "eur")');
+  }
+  if (s.country !== undefined) {
+    if (typeof s.country === 'string' && /^[a-z]{2}$/i.test(s.country)) settings.country = s.country.toUpperCase();
+    else problems.push('settings.country doit être un code pays à deux lettres (ex. "FR")');
   }
   if (s.excludeRegions !== undefined) {
     if (Array.isArray(s.excludeRegions) && s.excludeRegions.every((r) => typeof r === 'string')) settings.excludeRegions = s.excludeRegions;

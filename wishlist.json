@@ -1,6 +1,7 @@
 {
   "settings": {
     "currency": "eur",
+    "country": "FR",
     "excludeRegions": ["US", "USA", "NA", "North America", "LATAM", "Latin America", "RU", "Russia", "CIS", "Asia", "SEA", "India", "Turkey", "TR", "Argentina", "Brazil", "China", "CN", "Japan", "JP", "ROW", "Rest of World", "MENA"],
     "edition": "standard",
     "keyshopAlerts": true
